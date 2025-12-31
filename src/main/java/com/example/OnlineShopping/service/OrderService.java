@@ -57,7 +57,6 @@ public class OrderService {
     private final UserAddressRepository userAddressRepository;
     private final CartService cartService;
     private final EmailService emailService;
-    private final NotificationService notificationService;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -151,15 +150,6 @@ public class OrderService {
 
         // 记录状态日志
         recordStatusLog(order.getId(), null, OrderStatus.CREATED.name(), "订单创建", "user");
-        
-        // 创建订单创建通知
-        try {
-            notificationService.createOrderStatusNotification(
-                    order.getUserId(), order.getOrderNo(), order.getId(), 
-                    null, OrderStatus.CREATED.name(), "订单创建成功");
-        } catch (Exception e) {
-            log.error("创建订单通知失败：订单号={}", order.getOrderNo(), e);
-        }
 
         // 删除购物车中的商品
         for (CartItem cartItem : cartItems) {
@@ -243,15 +233,6 @@ public class OrderService {
         // 记录状态日志
         recordStatusLog(order.getId(), OrderStatus.CREATED.name(), OrderStatus.CANCELLED.name(), 
                 "用户取消订单", "user");
-        
-        // 创建订单取消通知
-        try {
-            notificationService.createOrderStatusNotification(
-                    order.getUserId(), order.getOrderNo(), order.getId(), 
-                    OrderStatus.CREATED.name(), OrderStatus.CANCELLED.name(), "订单已取消");
-        } catch (Exception e) {
-            log.error("创建订单通知失败：订单号={}", order.getOrderNo(), e);
-        }
 
         return convertToOrderResponse(order, true, true);
     }
@@ -282,15 +263,6 @@ public class OrderService {
         // 记录状态日志
         recordStatusLog(order.getId(), OrderStatus.SHIPPED.name(), OrderStatus.COMPLETED.name(), 
                 "用户确认收货，订单已完成", "user");
-        
-        // 创建订单完成通知
-        try {
-            notificationService.createOrderStatusNotification(
-                    order.getUserId(), order.getOrderNo(), order.getId(), 
-                    OrderStatus.SHIPPED.name(), OrderStatus.COMPLETED.name(), "订单已完成");
-        } catch (Exception e) {
-            log.error("创建订单通知失败：订单号={}", order.getOrderNo(), e);
-        }
 
         return convertToOrderResponse(order, true, true);
     }
@@ -392,14 +364,6 @@ public class OrderService {
             log.error("订单发货邮件发送失败：订单号={}", order.getOrderNo(), e);
         }
 
-        // 创建发货通知
-        try {
-            notificationService.createOrderShippedNotification(
-                    order.getUserId(), order.getOrderNo(), order.getId(), request.getTrackingNumber());
-        } catch (Exception e) {
-            log.error("创建发货通知失败：订单号={}", order.getOrderNo(), e);
-        }
-
         return convertToOrderResponse(order, true, true);
     }
 
@@ -438,15 +402,6 @@ public class OrderService {
         // 记录状态日志
         recordStatusLog(order.getId(), OrderStatus.CREATED.name(), OrderStatus.PAID.name(), 
                 "支付成功", "system");
-        
-        // 创建订单支付成功通知
-        try {
-            notificationService.createOrderStatusNotification(
-                    order.getUserId(), order.getOrderNo(), order.getId(), 
-                    OrderStatus.CREATED.name(), OrderStatus.PAID.name(), "订单支付成功");
-        } catch (Exception e) {
-            log.error("创建订单通知失败：订单号={}", order.getOrderNo(), e);
-        }
     }
 
     /**

@@ -78,12 +78,6 @@ const routes = [
     component: () => import('@/views/user/AddressList.vue'),
     meta: { requiresAuth: true }
   },
-  {
-    path: '/notifications',
-    name: 'Notifications',
-    component: () => import('@/views/notification/NotificationList.vue'),
-    meta: { requiresAuth: true }
-  },
   // 管理端路由
   {
     path: '/admin',
@@ -144,11 +138,6 @@ const routes = [
         name: 'AdminProfile',
         component: () => import('@/views/user/Profile.vue')
       },
-      {
-        path: 'notifications',
-        name: 'AdminNotifications',
-        component: () => import('@/views/notification/NotificationList.vue')
-      }
     ]
   }
 ]

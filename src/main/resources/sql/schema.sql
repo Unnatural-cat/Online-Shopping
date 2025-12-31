@@ -172,28 +172,7 @@ CREATE TABLE IF NOT EXISTS `order_status_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单状态日志表';
 
 -- ============================================
--- 9. 通知表（notification）
--- ============================================
-CREATE TABLE IF NOT EXISTS `notification` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '通知ID',
-    `user_id` BIGINT NOT NULL COMMENT '用户ID',
-    `type` VARCHAR(50) NOT NULL COMMENT '通知类型：ORDER_STATUS-订单状态, ORDER_SHIPPED-订单发货',
-    `title` VARCHAR(200) NOT NULL COMMENT '通知标题',
-    `content` TEXT NULL COMMENT '通知内容',
-    `order_no` VARCHAR(50) NULL COMMENT '订单号',
-    `order_id` BIGINT NULL COMMENT '订单ID',
-    `is_read` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否已读：0-未读, 1-已读',
-    `link` VARCHAR(500) NULL COMMENT '跳转链接',
-    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    PRIMARY KEY (`id`),
-    KEY `idx_user_id` (`user_id`),
-    KEY `idx_is_read` (`is_read`),
-    KEY `idx_created_at` (`created_at`),
-    KEY `idx_user_read` (`user_id`, `is_read`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='通知表';
-
--- ============================================
--- 10. 商品分类表（category）
+-- 9. 商品分类表（category）
 -- ============================================
 CREATE TABLE IF NOT EXISTS `category` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '分类ID',

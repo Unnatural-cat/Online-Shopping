@@ -46,8 +46,6 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
             // 商品列表和详情接口公开（顾客端浏览商品不需要登录）
             .requestMatchers("/api/products", "/api/products/**").permitAll()
-            // 通知接口需要认证
-            .requestMatchers("/api/notifications/**").authenticated()
             // 管理端接口需要ADMIN角色
             .requestMatchers("/api/admin/**").hasRole("ADMIN")
             // 其他接口需要认证

@@ -25,13 +25,6 @@
             </div>
           </el-tooltip>
           
-          <!-- 通知铃铛 -->
-          <el-badge :value="notificationCount" :hidden="notificationCount === 0" class="notification-badge">
-            <div class="notification-icon" @click="router.push('/admin/notifications')">
-              <el-icon><Bell /></el-icon>
-            </div>
-          </el-badge>
-          
           <!-- 用户头像 -->
           <div class="user-avatar" @click="router.push('/admin/profile')" title="个人中心">
             <el-icon><User /></el-icon>
@@ -119,7 +112,6 @@ import {
   Document, 
   DataAnalysis, 
   QuestionFilled, 
-  Bell, 
   User,
   SwitchButton,
   Expand,
@@ -127,14 +119,12 @@ import {
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { showSuccess } from '@/utils/message'
-import { getUnreadCount } from '@/api/notification'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 
 const sidebarCollapsed = ref(false)
-const notificationCount = ref(0)
 
 const sidebarWidth = computed(() => sidebarCollapsed.value ? '64px' : '220px')
 
@@ -148,21 +138,6 @@ const activeMenu = computed(() => {
   if (path.startsWith('/admin/profile')) return '/admin/profile'
   return path
 })
-
-async function loadNotificationCount() {
-  if (!userStore.isLoggedIn) {
-    notificationCount.value = 0
-    return
-  }
-  try {
-    const response = await getUnreadCount()
-    if (response && response.code === 0) {
-      notificationCount.value = response.data || 0
-    }
-  } catch (error) {
-    notificationCount.value = 0
-  }
-}
 
 function handleHelp() {
   // 帮助功能
@@ -179,17 +154,6 @@ function toggleSidebar() {
   sidebarCollapsed.value = !sidebarCollapsed.value
   }
 
-onMounted(() => {
-  loadNotificationCount()
-})
-
-watch(() => userStore.isLoggedIn, (isLoggedIn) => {
-  if (isLoggedIn) {
-    loadNotificationCount()
-  } else {
-    notificationCount.value = 0
-  }
-})
 </script>
 
 <style scoped>
@@ -344,42 +308,6 @@ watch(() => userStore.isLoggedIn, (isLoggedIn) => {
 .help-icon .el-icon {
   font-size: 16px;
   color: #fff;
-}
-
-/* 通知图标容器 */
-.notification-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.notification-icon:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-}
-
-.notification-icon .el-icon {
-  font-size: 16px;
-  color: #fff;
-}
-
-.notification-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.notification-badge :deep(.el-badge__content) {
-  background-color: #f56c6c;
-  border-color: #f56c6c;
-  font-weight: 600;
-  top: -2px;
-  right: -2px;
 }
 
 /* 用户头像 */

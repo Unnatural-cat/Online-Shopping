@@ -25,13 +25,6 @@
             </div>
           </el-tooltip>
           
-          <!-- 通知铃铛 -->
-          <el-badge :value="notificationCount" :hidden="notificationCount === 0" class="notification-badge" v-if="userStore.isLoggedIn">
-            <div class="notification-icon" @click="handleMenuClick('/notifications')">
-              <el-icon><Bell /></el-icon>
-            </div>
-          </el-badge>
-          
           <!-- 用户头像 -->
           <div class="user-avatar" v-if="userStore.isLoggedIn" @click="handleMenuClick('/profile')" title="个人中心">
             <el-icon><User /></el-icon>
@@ -122,7 +115,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { 
   User, 
   ArrowDown, 
-  Bell, 
   ShoppingCart, 
   House, 
   Document, 
@@ -135,7 +127,6 @@ import {
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { getCart } from '@/api/cart'
-import { getUnreadCount } from '@/api/notification'
 import { showSuccess } from '@/utils/message'
 
 const route = useRoute()
@@ -144,7 +135,6 @@ const userStore = useUserStore()
 
 const sidebarCollapsed = ref(false)
 const cartItemCount = ref(0)
-const notificationCount = ref(0)
 
 const sidebarWidth = computed(() => sidebarCollapsed.value ? '64px' : '220px')
 
@@ -175,25 +165,6 @@ async function loadCartCount() {
   } catch (error) {
     // 静默失败，可能是未登录或网络错误
     cartItemCount.value = 0
-  }
-}
-
-async function loadNotificationCount() {
-  if (!userStore.isLoggedIn) {
-    notificationCount.value = 0
-    return
-  }
-  try {
-    const response = await getUnreadCount()
-    if (response && response.code === 0) {
-      notificationCount.value = response.data || 0
-    } else {
-      notificationCount.value = 0
-    }
-  } catch (error) {
-    // 静默失败，可能是未登录或网络错误
-    console.warn('获取通知数量失败:', error)
-    notificationCount.value = 0
   }
 }
 
@@ -239,26 +210,22 @@ function toggleSidebar() {
   sidebarCollapsed.value = !sidebarCollapsed.value
 }
 
-// 监听登录状态变化，刷新购物车数量和通知数量
+// 监听登录状态变化，刷新购物车数量
 watch(() => userStore.isLoggedIn, (isLoggedIn) => {
   if (isLoggedIn) {
     loadCartCount()
-    loadNotificationCount()
   } else {
     cartItemCount.value = 0
-    notificationCount.value = 0
   }
 })
 
 onMounted(() => {
   loadCartCount()
-  loadNotificationCount()
 })
 
-// 监听路由变化，刷新购物车数量和通知数量
+// 监听路由变化，刷新购物车数量
 watch(() => route.path, () => {
   loadCartCount()
-  loadNotificationCount()
 })
 </script>
 
@@ -413,42 +380,6 @@ watch(() => route.path, () => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-/* 通知图标容器 */
-.notification-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.notification-icon:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-}
-
-.notification-icon .el-icon {
-  font-size: 16px;
-  color: #fff;
-}
-
-.notification-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.notification-badge :deep(.el-badge__content) {
-  background-color: #f56c6c;
-  border-color: #f56c6c;
-  font-weight: 600;
-  top: -2px;
-  right: -2px;
 }
 
 /* 用户头像 */
