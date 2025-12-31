@@ -1,6 +1,6 @@
 <template>
-  <div class="payment" v-loading="loading">
-    <div class="payment-container">
+  <CustomerLayout>
+    <div class="payment" v-loading="loading">
         <el-card>
           <el-result
             v-if="paymentStatus === 'success'"
@@ -26,7 +26,7 @@
               </el-radio-group>
             </div>
             <div class="payment-actions">
-              <el-button @click="$router.back()">取消</el-button>
+              <el-button size="large" @click="$router.back()">取消</el-button>
               <el-button type="primary" size="large" @click="handlePay" :loading="paying">
                 立即支付
               </el-button>
@@ -34,7 +34,7 @@
           </div>
         </el-card>
     </div>
-  </div>
+  </CustomerLayout>
 </template>
 
 <script setup>
@@ -43,6 +43,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { getOrderDetail } from '@/api/order'
 import { pay } from '@/api/payment'
 import { showSuccess, showError } from '@/utils/message'
+import CustomerLayout from '@/components/CustomerLayout.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -104,14 +105,9 @@ onMounted(() => {
 
 <style scoped>
 .payment {
-  min-height: 100vh;
-  background-color: #f5f5f5;
-}
-
-.payment-container {
-  max-width: 800px;
-  margin: 0 auto;
   padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .order-info {
@@ -139,7 +135,21 @@ onMounted(() => {
 .payment-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
   margin-top: 30px;
+}
+
+.payment-actions :deep(.el-button) {
+  height: 40px;
+  padding: 0 20px;
+  font-size: 14px;
+  border-radius: 4px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 100px;
+  line-height: 1;
 }
 </style>

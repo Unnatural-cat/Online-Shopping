@@ -40,10 +40,8 @@ public class ProductService {
 
         // 如果有关键词或价格区间，使用组合查询
         if ((request.getKeyword() != null && !request.getKeyword().trim().isEmpty()) ||
-            request.getMinPrice() != null || request.getMaxPrice() != null ||
-            request.getCategoryId() != null) {
+            request.getMinPrice() != null || request.getMaxPrice() != null) {
             productPage = productRepository.findWithFilters(
-                request.getCategoryId(),
                 ProductStatus.ON_SALE,
                 request.getMinPrice(),
                 request.getMaxPrice(),
@@ -90,7 +88,6 @@ public class ProductService {
     public ProductResponse createProduct(CreateProductRequest request) {
         Product product = Product.builder()
                 .name(request.getName().trim())
-                .categoryId(request.getCategoryId())
                 .price(request.getPrice())
                 .stock(request.getStock())
                 .description(request.getDescription() != null ? request.getDescription().trim() : null)
@@ -118,9 +115,6 @@ public class ProductService {
         // 更新字段
         if (request.getName() != null) {
             product.setName(request.getName().trim());
-        }
-        if (request.getCategoryId() != null) {
-            product.setCategoryId(request.getCategoryId());
         }
         if (request.getPrice() != null) {
             product.setPrice(request.getPrice());
@@ -217,7 +211,6 @@ public class ProductService {
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
-                .categoryId(product.getCategoryId())
                 .price(product.getPrice())
                 .stock(product.getStock())
                 .description(product.getDescription())

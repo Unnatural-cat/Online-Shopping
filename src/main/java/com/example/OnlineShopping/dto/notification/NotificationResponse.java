@@ -16,12 +16,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class NotificationResponse {
     private Long id;
+    private String type; // ORDER_STATUS, ORDER_SHIPPED, etc.
     private String title;
     private String content;
-    private String type;
-    private Long relatedId;
-    private String relatedOrderNo; // 关联的订单号（用于跳转）
+    private String orderNo;
+    private Long orderId;
     private Boolean isRead;
     private LocalDateTime createdAt;
+    private String link; // 跳转链接
 }
 

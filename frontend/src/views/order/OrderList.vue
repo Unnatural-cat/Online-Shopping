@@ -1,11 +1,10 @@
 <template>
-  <div class="order-list" v-loading="loading">
-    <div class="order-list-container">
-      <div class="order-header">
-        <h1>我的订单</h1>
+  <CustomerLayout>
+    <div class="order-list page-container" v-loading="loading">
+      <div class="page-header">
+      <h1>我的订单</h1>
       </div>
-      <div class="order-content">
-        <el-card>
+      <el-card class="card-container">
           <template #header>
             <div class="filter-header">
               <span>订单状态：</span>
@@ -87,6 +86,7 @@
             </el-card>
           </div>
 
+        <div class="pagination-container">
           <Pagination
             v-if="total > 0"
             :total="total"
@@ -94,10 +94,10 @@
             :size="queryParams.size"
             @change="handlePageChange"
           />
+        </div>
         </el-card>
-      </div>
     </div>
-  </div>
+  </CustomerLayout>
 </template>
 
 <script setup>
@@ -105,6 +105,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { getOrders, cancelOrder } from '@/api/order'
 import { showSuccess, showError, confirm } from '@/utils/message'
 import Pagination from '@/components/Pagination.vue'
+import CustomerLayout from '@/components/CustomerLayout.vue'
 
 const loading = ref(false)
 const orders = ref([])
@@ -201,38 +202,13 @@ onMounted(() => {
 
 <style scoped>
 .order-list {
-  min-height: 100vh;
-  background-color: #f5f5f5;
-}
-
-.order-list-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.order-header {
-  background: white;
-  padding: 20px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-}
-
-.order-header h1 {
-  margin: 0;
-  font-size: 24px;
-}
-
-.order-content {
-  background: white;
-  padding: 20px;
-  border-radius: 4px;
+  /* 使用全局样式 */
 }
 
 .filter-header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--spacing-md);
 }
 
 .order-list-content {
@@ -318,7 +294,7 @@ onMounted(() => {
 
 .order-actions {
   display: flex;
-  gap: 10px;
+  gap: var(--button-gap);
+  align-items: center;
 }
 </style>
-

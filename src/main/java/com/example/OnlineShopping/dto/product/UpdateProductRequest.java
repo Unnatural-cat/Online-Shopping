@@ -15,8 +15,6 @@ public class UpdateProductRequest {
     @Size(max = 200, message = "商品名称长度不能超过200个字符")
     private String name;
 
-    private Long categoryId;
-
     @DecimalMin(value = "0.01", message = "商品价格必须大于0")
     private BigDecimal price;
 

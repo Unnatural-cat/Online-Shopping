@@ -73,7 +73,12 @@ public class AdminProductController {
     @PutMapping("/{id}/status")
     public ResponseResult<ProductResponse> updateProductStatus(
             @PathVariable Long id,
-            @RequestParam String status) {
+            @RequestBody java.util.Map<String, String> request) {
+        String status = request.get("status");
+        if (status == null || status.isEmpty()) {
+            throw new com.example.OnlineShopping.exception.BusinessException(
+                    com.example.OnlineShopping.common.ErrorCode.PARAM_ERROR, "状态参数不能为空");
+        }
         ProductResponse response = productService.updateProductStatus(id, status);
         return ResponseResult.success("商品状态更新成功", response);
     }

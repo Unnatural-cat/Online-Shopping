@@ -20,9 +20,20 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     Page<Notification> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 
     /**
-     * 根据用户ID和是否已读分页查询通知
+     * 根据用户ID和已读状态分页查询通知
      */
     Page<Notification> findByUserIdAndIsReadOrderByCreatedAtDesc(Long userId, Boolean isRead, Pageable pageable);
+
+    /**
+     * 根据用户ID和类型分页查询通知
+     */
+    Page<Notification> findByUserIdAndTypeOrderByCreatedAtDesc(Long userId, String type, Pageable pageable);
+
+    /**
+     * 根据用户ID、已读状态和类型分页查询通知
+     */
+    Page<Notification> findByUserIdAndIsReadAndTypeOrderByCreatedAtDesc(
+            Long userId, Boolean isRead, String type, Pageable pageable);
 
     /**
      * 统计用户未读通知数量
@@ -30,17 +41,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     long countByUserIdAndIsReadFalse(Long userId);
 
     /**
-     * 标记通知为已读
-     */
-    @Modifying
-    @Query("UPDATE Notification n SET n.isRead = true WHERE n.id = :id AND n.userId = :userId")
-    int markAsRead(@Param("id") Long id, @Param("userId") Long userId);
-
-    /**
      * 标记用户所有通知为已读
      */
     @Modifying
     @Query("UPDATE Notification n SET n.isRead = true WHERE n.userId = :userId AND n.isRead = false")
-    int markAllAsRead(@Param("userId") Long userId);
+    void markAllAsRead(@Param("userId") Long userId);
 }
-

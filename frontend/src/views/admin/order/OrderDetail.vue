@@ -35,7 +35,8 @@
 
         <div class="section">
           <h3>商品信息</h3>
-          <el-table :data="order.items" border>
+          <div class="table-container">
+            <el-table :data="order.items" border stripe class="order-items-table">
             <el-table-column label="商品" width="400">
               <template #default="{ row }">
                 <div class="product-cell">
@@ -62,6 +63,7 @@
               </template>
             </el-table-column>
           </el-table>
+          </div>
         </div>
 
         <el-divider />
@@ -323,5 +325,15 @@ onMounted(() => {
 .order-actions {
   margin-top: 30px;
   text-align: right;
+}
+
+/* 确保表格内容垂直居中 */
+.order-items-table :deep(.el-table th),
+.order-items-table :deep(.el-table td) {
+  vertical-align: middle !important;
+}
+
+.order-items-table :deep(.el-table__cell) {
+  vertical-align: middle !important;
 }
 </style>

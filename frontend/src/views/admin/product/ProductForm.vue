@@ -55,14 +55,6 @@
             />
           </div>
         </el-form-item>
-        <el-form-item label="分类ID" prop="categoryId">
-          <el-input-number
-            v-model="productForm.categoryId"
-            :min="0"
-            placeholder="请输入分类ID（可选）"
-            style="width: 100%;"
-          />
-        </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleSubmit" :loading="submitting">
             {{ isEdit ? '更新' : '创建' }}
@@ -97,8 +89,7 @@ const productForm = reactive({
   price: null,
   stock: null,
   description: '',
-  coverImageUrl: '',
-  categoryId: null
+  coverImageUrl: ''
 })
 
 const rules = {
@@ -129,8 +120,7 @@ async function loadProduct() {
         price: response.data.price || null,
         stock: response.data.stock || null,
         description: response.data.description || '',
-        coverImageUrl: response.data.coverImageUrl || '',
-        categoryId: response.data.categoryId || null
+        coverImageUrl: response.data.coverImageUrl || ''
       })
     }
   } catch (error) {

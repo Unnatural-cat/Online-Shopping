@@ -65,16 +65,22 @@ service.interceptors.response.use(
           break
         case 403:
           message = '拒绝访问，权限不足'
-          // 如果是访问管理端，可能是权限问题，跳转到商品列表
+          // 如果是访问管理端API，清除token并跳转到登录页
           if (error.config?.url?.includes('/admin')) {
-            router.push('/products')
+            removeToken()
+            // 如果当前在管理端路由，跳转到登录页
+            if (router.currentRoute.value.path.startsWith('/admin')) {
+              router.push({ name: 'Login', query: { redirect: router.currentRoute.value.fullPath } })
+            }
           }
           break
         case 404:
           message = '请求的资源不存在'
           break
         case 500:
-          message = '服务器错误'
+          message = error.response.data?.message || '服务器错误'
+          // 记录详细错误信息用于调试
+          console.error('服务器错误:', error.response.data)
           break
         default:
           message = error.response.data?.message || `请求失败 (${status})`

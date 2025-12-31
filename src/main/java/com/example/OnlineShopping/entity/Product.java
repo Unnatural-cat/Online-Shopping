@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "product", indexes = {
-    @Index(name = "idx_category_id", columnList = "category_id"),
     @Index(name = "idx_status", columnList = "status"),
     @Index(name = "idx_price", columnList = "price"),
     @Index(name = "idx_sales_count", columnList = "sales_count"),
@@ -34,9 +33,6 @@ public class Product {
 
     @Column(nullable = false, length = 200)
     private String name;
-
-    @Column(name = "category_id")
-    private Long categoryId;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;

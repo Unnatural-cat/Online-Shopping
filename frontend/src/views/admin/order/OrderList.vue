@@ -18,7 +18,7 @@
             />
           </el-form-item>
           <el-form-item label="状态">
-            <el-select v-model="queryParams.status" clearable placeholder="全部" @change="handleSearch">
+            <el-select v-model="queryParams.status" clearable placeholder="全部" @change="handleSearch" style="width: 200px;">
               <el-option label="待支付" value="CREATED" />
               <el-option label="待发货" value="PAID" />
               <el-option label="已发货" value="SHIPPED" />
@@ -33,7 +33,7 @@
               placeholder="请输入用户ID"
               clearable
               @clear="handleSearch"
-              style="width: 150px;"
+              style="width: 200px;"
             />
           </el-form-item>
           <el-form-item>
@@ -43,29 +43,26 @@
         </el-form>
       </div>
 
-      <el-table :data="orders" border>
-        <el-table-column prop="orderNo" label="订单号" width="180" />
-        <el-table-column prop="userId" label="用户ID" width="100" />
-        <el-table-column prop="receiverName" label="收货人" width="120" />
-        <el-table-column prop="receiverPhone" label="联系电话" width="130" />
-        <el-table-column prop="totalAmount" label="订单金额" width="120">
+      <div class="table-container">
+        <el-table :data="orders" border stripe class="order-table" style="width: 100%">
+        <el-table-column prop="orderNo" label="订单号" min-width="180" />
+        <el-table-column prop="userId" label="用户ID" min-width="100" />
+        <el-table-column prop="receiverName" label="收货人" min-width="120" />
+        <el-table-column prop="receiverPhone" label="联系电话" min-width="130" />
+        <el-table-column prop="totalAmount" label="订单金额" min-width="120">
           <template #default="{ row }">
             ¥{{ row.totalAmount.toFixed(2) }}
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="status" label="状态" min-width="100">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)">
               {{ getStatusText(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createdAt" label="下单时间" width="180">
-          <template #default="{ row }">
-            {{ formatDate(row.createdAt) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column prop="createdAt" label="下单时间" min-width="180" />
+        <el-table-column label="操作" min-width="150" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="handleViewDetail(row.orderNo)">
               查看详情
@@ -80,15 +77,18 @@
             </el-button>
           </template>
         </el-table-column>
-      </el-table>
+        </el-table>
+      </div>
 
-      <Pagination
-        v-if="total > 0"
-        :total="total"
-        :page="queryParams.page"
-        :size="queryParams.size"
-        @change="handlePageChange"
-      />
+      <div class="pagination-container">
+        <Pagination
+          v-if="total > 0"
+          :total="total"
+          :page="queryParams.page"
+          :size="queryParams.size"
+          @change="handlePageChange"
+        />
+      </div>
     </el-card>
 
     <!-- 发货对话框 -->
@@ -263,9 +263,80 @@ onMounted(() => {
 <style scoped>
 .admin-order-list {
   height: 100%;
+  width: 100%;
+}
+
+.admin-order-list :deep(.el-card) {
+  width: 100%;
+}
+
+.admin-order-list :deep(.el-card__body) {
+  width: 100%;
+  padding: 20px;
 }
 
 .filter-bar {
   margin-bottom: 20px;
+  padding-top: 30px;
+}
+
+.filter-bar :deep(.el-form) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 15px;
+}
+
+.filter-bar :deep(.el-form-item) {
+  margin-bottom: 0;
+  margin-right: 0;
+}
+
+/* 对齐第一个表单项的标签与表格第一列 */
+.filter-bar :deep(.el-form-item:first-child) {
+  margin-left: 0;
+  padding-left: 20px; /* 与表格第一列的padding-left对齐 */
+}
+
+/* 确保标签和输入框对齐 */
+.filter-bar :deep(.el-form-item__label) {
+  padding-right: 12px;
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* 确保表格填满容器 */
+.order-table {
+  width: 100% !important;
+}
+
+/* 获取表格第一列的padding，用于对齐筛选栏 */
+.order-table :deep(.el-table__cell:first-child) {
+  padding-left: 20px;
+}
+
+/* 确保表格内容垂直居中 */
+.order-table :deep(.el-table th),
+.order-table :deep(.el-table td) {
+  vertical-align: middle !important;
+}
+
+.order-table :deep(.el-table__cell) {
+  vertical-align: middle !important;
+}
+
+/* 确保表格头部和主体宽度一致 */
+.order-table :deep(.el-table__header-wrapper),
+.order-table :deep(.el-table__body-wrapper) {
+  width: 100% !important;
+}
+
+.pagination-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
 }
 </style>

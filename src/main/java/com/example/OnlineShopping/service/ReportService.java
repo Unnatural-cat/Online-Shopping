@@ -18,7 +18,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -127,23 +129,37 @@ public class ReportService {
 
         List<Object[]> results = orderItemRepository.findTopProducts(startTime, endTime);
 
-        return results.stream()
-                .limit(topN)
-                .map(row -> {
-                    Long productId = ((Number) row[0]).longValue();
-                    String productName = (String) row[1];
-                    Integer salesQuantity = ((Number) row[2]).intValue();
-                    BigDecimal salesAmount = (BigDecimal) row[3];
-                    Long orderCount = ((Number) row[4]).longValue();
+        // 按商品ID去重合并（防止同一商品因名称不同而重复）
+        Map<Long, TopProductResponse> productMap = new LinkedHashMap<>();
+        
+        for (Object[] row : results) {
+            Long productId = ((Number) row[0]).longValue();
+            String productName = (String) row[1];
+            Integer salesQuantity = ((Number) row[2]).intValue();
+            BigDecimal salesAmount = (BigDecimal) row[3];
+            Long orderCount = ((Number) row[4]).longValue();
 
-                    return TopProductResponse.builder()
-                            .productId(productId)
-                            .productName(productName)
-                            .salesQuantity(salesQuantity)
-                            .salesAmount(salesAmount)
-                            .orderCount(orderCount)
-                            .build();
-                })
+            // 如果商品已存在，合并数据
+            if (productMap.containsKey(productId)) {
+                TopProductResponse existing = productMap.get(productId);
+                existing.setSalesQuantity(existing.getSalesQuantity() + salesQuantity);
+                existing.setSalesAmount(existing.getSalesAmount().add(salesAmount != null ? salesAmount : BigDecimal.ZERO));
+                existing.setOrderCount(existing.getOrderCount() + orderCount);
+            } else {
+                productMap.put(productId, TopProductResponse.builder()
+                        .productId(productId)
+                        .productName(productName)
+                        .salesQuantity(salesQuantity)
+                        .salesAmount(salesAmount != null ? salesAmount : BigDecimal.ZERO)
+                        .orderCount(orderCount)
+                        .build());
+            }
+        }
+
+        // 按销售数量排序并限制数量
+        return productMap.values().stream()
+                .sorted((a, b) -> Integer.compare(b.getSalesQuantity(), a.getSalesQuantity()))
+                .limit(topN)
                 .collect(Collectors.toList());
     }
 

@@ -18,11 +18,6 @@ public class ProductQueryRequest {
     private Integer size = 20;
 
     /**
-     * 分类ID
-     */
-    private Long categoryId;
-
-    /**
      * 关键词（搜索商品名称或描述）
      */
     private String keyword;

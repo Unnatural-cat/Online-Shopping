@@ -1,61 +1,42 @@
 <template>
-  <div class="notification-list" v-loading="loading">
-    <div class="notification-container">
-      <div class="notification-header">
-        <h1>通知中心</h1>
+  <component :is="isAdminRoute ? 'div' : 'CustomerLayout'">
+    <div class="notification-list">
+      <div class="page-header">
+        <h1>{{ isAdminRoute ? '通知中心' : '我的通知' }}</h1>
         <div class="header-actions">
-          <el-button
-            v-if="unreadCount > 0"
-            @click="handleMarkAllRead"
-            :loading="markingAll"
-          >
-            全部标记为已读
-          </el-button>
+          <el-button v-if="unreadCount > 0" type="primary" @click="handleMarkAllRead">全部标记为已读</el-button>
         </div>
       </div>
-      <div class="notification-content">
-        <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-          <el-tab-pane label="全部" name="all">
-            <template #label>
-              <span>全部</span>
-            </template>
-          </el-tab-pane>
-          <el-tab-pane label="未读" name="unread">
-            <template #label>
-              <span>未读 <el-badge :value="unreadCount" :hidden="unreadCount === 0" /></span>
-            </template>
-          </el-tab-pane>
-          <el-tab-pane label="已读" name="read">
-            <template #label>
-              <span>已读</span>
-            </template>
-          </el-tab-pane>
-        </el-tabs>
 
-        <div v-if="notifications.length === 0 && !loading" class="empty-state">
-          <el-empty description="暂无通知" />
-        </div>
+      <div class="filter-bar">
+        <el-radio-group v-model="filterType" @change="handleFilterChange">
+          <el-radio-button :label="null">全部</el-radio-button>
+          <el-radio-button :label="false">未读</el-radio-button>
+          <el-radio-button :label="true">已读</el-radio-button>
+        </el-radio-group>
+      </div>
 
+      <div v-loading="loading" class="notification-container">
+        <el-empty v-if="!loading && notifications.length === 0" description="暂无通知" />
         <div v-else class="notification-items">
           <div
             v-for="notification in notifications"
             :key="notification.id"
-            class="notification-item"
-            :class="{ 'unread': !notification.isRead }"
-            @click="handleItemClick(notification)"
+            :class="['notification-item', { 'unread': !notification.isRead }]"
+            @click="handleNotificationClick(notification)"
           >
             <div class="notification-icon">
-              <el-icon v-if="notification.type === 'ORDER_SHIPPED'">
+              <el-icon v-if="notification.type === 'ORDER_SHIPPED'" color="#67C23A" size="24">
                 <Truck />
               </el-icon>
-              <el-icon v-else>
+              <el-icon v-else color="#409EFF" size="24">
                 <Bell />
               </el-icon>
             </div>
-            <div class="notification-content-item">
+            <div class="notification-body">
               <div class="notification-title">
                 <span>{{ notification.title }}</span>
-                <el-tag v-if="!notification.isRead" type="danger" size="small">未读</el-tag>
+                <el-badge v-if="!notification.isRead" is-dot class="unread-dot" />
               </div>
               <div class="notification-text">{{ notification.content }}</div>
               <div class="notification-time">{{ formatDate(notification.createdAt) }}</div>
@@ -64,137 +45,155 @@
               <el-button
                 v-if="!notification.isRead"
                 link
-                type="primary"
+                size="small"
                 @click.stop="handleMarkRead(notification.id)"
               >
                 标记已读
-              </el-button>
-              <el-button
-                v-if="notification.relatedOrderNo && notification.type === 'ORDER_SHIPPED'"
-                link
-                type="primary"
-                @click.stop="handleViewOrder(notification)"
-              >
-                查看订单
               </el-button>
             </div>
           </div>
         </div>
 
-        <div v-if="notifications.length > 0" class="pagination">
-          <el-pagination
-            v-model:current-page="currentPage"
-            v-model:page-size="pageSize"
-            :total="total"
-            :page-sizes="[10, 20, 50]"
-            layout="total, sizes, prev, pager, next"
-            @size-change="handleSizeChange"
-            @current-change="handlePageChange"
-          />
+        <div v-if="total > 0" class="pagination-wrapper">
+        <Pagination
+          :total="total"
+          :page="queryParams.page"
+          :size="queryParams.size"
+          @change="handlePageChange"
+        />
         </div>
       </div>
     </div>
-  </div>
+  </component>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, onMounted, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { Bell, Truck } from '@element-plus/icons-vue'
 import { getNotifications, markAsRead, markAllAsRead } from '@/api/notification'
 import { showSuccess, showError } from '@/utils/message'
+import CustomerLayout from '@/components/CustomerLayout.vue'
+import Pagination from '@/components/Pagination.vue'
 
 const router = useRouter()
+const route = useRoute()
+
+// 检测是否在管理端路由中
+const isAdminRoute = computed(() => route.path.startsWith('/admin'))
 
 const loading = ref(false)
-const markingAll = ref(false)
-const activeTab = ref('all')
 const notifications = ref([])
-const currentPage = ref(1)
-const pageSize = ref(20)
 const total = ref(0)
 const unreadCount = ref(0)
+const filterType = ref(null)
 
-const isReadFilter = computed(() => {
-  if (activeTab.value === 'unread') return false
-  if (activeTab.value === 'read') return true
-  return null
+const queryParams = reactive({
+  page: 1,
+  size: 20,
+  isRead: null
 })
 
 async function loadNotifications() {
   loading.value = true
   try {
-    const response = await getNotifications({
-      page: currentPage.value,
-      size: pageSize.value,
-      isRead: isReadFilter.value
-    })
-    if (response.code === 0) {
-      notifications.value = response.data.items || []
-      total.value = response.data.total || 0
-      unreadCount.value = response.data.unreadCount || 0
+    const params = {
+      page: queryParams.page,
+      size: queryParams.size
+    }
+    if (queryParams.isRead !== null) {
+      params.isRead = queryParams.isRead
+    }
+
+    const response = await getNotifications(params)
+    if (response && response.code === 0) {
+      notifications.value = response.data?.content || []
+      total.value = response.data?.totalElements || 0
+      unreadCount.value = response.data?.unreadCount || 0
+    } else {
+      notifications.value = []
+      total.value = 0
+      unreadCount.value = 0
     }
   } catch (error) {
-    console.error('加载通知失败:', error)
-    showError('加载通知失败，请稍后重试')
+    console.error('加载通知列表失败:', error)
+    // 如果是401或403，可能是未登录，不显示错误
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      notifications.value = []
+      total.value = 0
+      unreadCount.value = 0
+    } else {
+      showError('加载通知列表失败')
+    }
   } finally {
     loading.value = false
   }
 }
 
+function handleFilterChange() {
+  queryParams.isRead = filterType.value
+  queryParams.page = 1
+  loadNotifications()
+}
+
+function handlePageChange({ page, size }) {
+  queryParams.page = page
+  queryParams.size = size
+  loadNotifications()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 async function handleMarkRead(id) {
   try {
-    await markAsRead(id)
-    showSuccess('已标记为已读')
-    loadNotifications()
+    const response = await markAsRead(id)
+    if (response.code === 0) {
+      showSuccess('已标记为已读')
+      // 更新本地状态
+      const notification = notifications.value.find(n => n.id === id)
+      if (notification) {
+        notification.isRead = true
+        unreadCount.value = Math.max(0, unreadCount.value - 1)
+      }
+    }
   } catch (error) {
     console.error('标记已读失败:', error)
+    showError('标记已读失败')
   }
 }
 
 async function handleMarkAllRead() {
-  markingAll.value = true
   try {
-    await markAllAsRead()
-    showSuccess('已全部标记为已读')
-    loadNotifications()
+    const response = await markAllAsRead()
+    if (response.code === 0) {
+      showSuccess('已全部标记为已读')
+      unreadCount.value = 0
+      notifications.value.forEach(n => {
+        n.isRead = true
+      })
+    }
   } catch (error) {
-    console.error('全部标记已读失败:', error)
-  } finally {
-    markingAll.value = false
+    console.error('标记全部已读失败:', error)
+    showError('标记全部已读失败')
   }
 }
 
-function handleItemClick(notification) {
+function handleNotificationClick(notification) {
+  // 标记为已读
   if (!notification.isRead) {
     handleMarkRead(notification.id)
   }
-  if (notification.relatedId && notification.type === 'ORDER_SHIPPED') {
-    handleViewOrder(notification)
+  
+  // 跳转到相关页面
+  if (notification.link) {
+    router.push(notification.link)
+  } else if (notification.orderNo) {
+    // 根据当前路由判断跳转到管理端还是用户端
+    if (isAdminRoute.value) {
+      router.push(`/admin/orders/${notification.orderNo}`)
+    } else {
+      router.push(`/orders/${notification.orderNo}`)
+    }
   }
-}
-
-function handleViewOrder(notification) {
-  // 根据通知类型跳转到相应页面
-  if (notification.type === 'ORDER_SHIPPED' && notification.relatedOrderNo) {
-    router.push(`/orders/${notification.relatedOrderNo}`)
-  } else {
-    router.push('/orders')
-  }
-}
-
-function handleTabChange() {
-  currentPage.value = 1
-  loadNotifications()
-}
-
-function handleSizeChange() {
-  currentPage.value = 1
-  loadNotifications()
-}
-
-function handlePageChange() {
-  loadNotifications()
 }
 
 function formatDate(dateStr) {
@@ -210,6 +209,7 @@ function formatDate(dateStr) {
   if (minutes < 60) return `${minutes}分钟前`
   if (hours < 24) return `${hours}小时前`
   if (days < 7) return `${days}天前`
+  
   return date.toLocaleString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
@@ -226,52 +226,64 @@ onMounted(() => {
 
 <style scoped>
 .notification-list {
-  min-height: 100vh;
-  background-color: #f5f5f5;
-}
-
-.notification-container {
-  max-width: 1400px;
-  margin: 0 auto;
   padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: calc(100vh - 200px);
 }
 
-.notification-header {
+/* 管理端样式调整 */
+:deep(.admin-main) .notification-list {
+  padding: 20px;
+  max-width: 100%;
+  margin: 0;
+  min-height: auto;
+}
+
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 20px;
   background: white;
   padding: 20px;
   border-radius: 4px;
-  margin-bottom: 20px;
 }
 
-.notification-header h1 {
+.page-header h1 {
   margin: 0;
   font-size: 24px;
 }
 
-.notification-content {
+.filter-bar {
   background: white;
-  padding: 20px;
+  padding: 15px 20px;
+  margin-bottom: 20px;
   border-radius: 4px;
 }
 
-.empty-state {
-  padding: 40px 0;
+.notification-container {
+  background: white;
+  border-radius: 4px;
+  min-height: 400px;
+  padding: 10px 0;
 }
 
 .notification-items {
-  margin-top: 20px;
+  padding: 0;
 }
 
 .notification-item {
   display: flex;
   align-items: flex-start;
-  padding: 15px;
+  padding: 15px 20px;
   border-bottom: 1px solid #ebeef5;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
 }
 
 .notification-item:hover {
@@ -288,42 +300,46 @@ onMounted(() => {
 
 .notification-icon {
   margin-right: 15px;
-  font-size: 24px;
-  color: #409eff;
+  flex-shrink: 0;
 }
 
-.notification-content-item {
+.notification-body {
   flex: 1;
+  min-width: 0;
 }
 
 .notification-title {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  font-weight: 500;
   font-size: 16px;
+  font-weight: 500;
+  color: #303133;
+  margin-bottom: 8px;
+}
+
+.unread-dot {
+  margin-left: 8px;
 }
 
 .notification-text {
+  font-size: 14px;
   color: #606266;
   margin-bottom: 8px;
   line-height: 1.5;
 }
 
 .notification-time {
-  color: #909399;
   font-size: 12px;
+  color: #909399;
 }
 
 .notification-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  flex-shrink: 0;
+  margin-left: 15px;
 }
 
-.pagination {
-  margin-top: 20px;
+.pagination-wrapper {
+  padding: 20px;
   display: flex;
   justify-content: center;
 }

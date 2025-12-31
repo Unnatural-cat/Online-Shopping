@@ -24,7 +24,6 @@ import com.example.OnlineShopping.repository.OrderStatusLogRepository;
 import com.example.OnlineShopping.repository.ProductRepository;
 import com.example.OnlineShopping.repository.UserAddressRepository;
 import com.example.OnlineShopping.service.EmailService;
-import com.example.OnlineShopping.service.NotificationService;
 import com.example.OnlineShopping.util.OrderNoUtil;
 import com.example.OnlineShopping.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +39,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -116,12 +116,13 @@ public class OrderService {
                         String.format("商品【%s】库存不足", product.getName()));
             }
 
-            // 创建订单项（保存商品快照）
+            // 创建订单项（保存商品快照，包括图片URL）
             BigDecimal subtotal = product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
             OrderItem orderItem = OrderItem.builder()
                     .productId(product.getId())
                     .productName(product.getName())
                     .productPrice(product.getPrice())
+                    .productImageUrl(product.getCoverImageUrl())
                     .quantity(cartItem.getQuantity())
                     .subtotalAmount(subtotal)
                     .build();
@@ -150,6 +151,15 @@ public class OrderService {
 
         // 记录状态日志
         recordStatusLog(order.getId(), null, OrderStatus.CREATED.name(), "订单创建", "user");
+        
+        // 创建订单创建通知
+        try {
+            notificationService.createOrderStatusNotification(
+                    order.getUserId(), order.getOrderNo(), order.getId(), 
+                    null, OrderStatus.CREATED.name(), "订单创建成功");
+        } catch (Exception e) {
+            log.error("创建订单通知失败：订单号={}", order.getOrderNo(), e);
+        }
 
         // 删除购物车中的商品
         for (CartItem cartItem : cartItems) {
@@ -233,6 +243,15 @@ public class OrderService {
         // 记录状态日志
         recordStatusLog(order.getId(), OrderStatus.CREATED.name(), OrderStatus.CANCELLED.name(), 
                 "用户取消订单", "user");
+        
+        // 创建订单取消通知
+        try {
+            notificationService.createOrderStatusNotification(
+                    order.getUserId(), order.getOrderNo(), order.getId(), 
+                    OrderStatus.CREATED.name(), OrderStatus.CANCELLED.name(), "订单已取消");
+        } catch (Exception e) {
+            log.error("创建订单通知失败：订单号={}", order.getOrderNo(), e);
+        }
 
         return convertToOrderResponse(order, true, true);
     }
@@ -334,22 +353,11 @@ public class OrderService {
             log.error("订单发货邮件发送失败：订单号={}", order.getOrderNo(), e);
         }
 
-        // 创建站内通知
+        // 创建发货通知
         try {
-            String title = "您的订单已发货";
-            String content = String.format("订单号：%s 已发货", order.getOrderNo());
-            if (request.getTrackingNumber() != null && !request.getTrackingNumber().trim().isEmpty()) {
-                content += String.format("，物流单号：%s", request.getTrackingNumber());
-            }
-            notificationService.createNotification(
-                    order.getUserId(),
-                    title,
-                    content,
-                    "ORDER_SHIPPED",
-                    order.getId()
-            );
+            notificationService.createOrderShippedNotification(
+                    order.getUserId(), order.getOrderNo(), order.getId(), request.getTrackingNumber());
         } catch (Exception e) {
-            // 通知创建失败不影响业务流程，只记录日志
             log.error("创建发货通知失败：订单号={}", order.getOrderNo(), e);
         }
 
@@ -391,6 +399,15 @@ public class OrderService {
         // 记录状态日志
         recordStatusLog(order.getId(), OrderStatus.CREATED.name(), OrderStatus.PAID.name(), 
                 "支付成功", "system");
+        
+        // 创建订单支付成功通知
+        try {
+            notificationService.createOrderStatusNotification(
+                    order.getUserId(), order.getOrderNo(), order.getId(), 
+                    OrderStatus.CREATED.name(), OrderStatus.PAID.name(), "订单支付成功");
+        } catch (Exception e) {
+            log.error("创建订单通知失败：订单号={}", order.getOrderNo(), e);
+        }
     }
 
     /**
@@ -449,8 +466,44 @@ public class OrderService {
 
         if (includeItems) {
             List<OrderItem> orderItems = orderItemRepository.findByOrderId(order.getId());
+            
+            // 检查是否需要查询商品信息（只有订单项中没有图片URL时才查询）
+            boolean needQueryProducts = orderItems.stream()
+                    .anyMatch(item -> {
+                        try {
+                            String imageUrl = item.getProductImageUrl();
+                            return imageUrl == null || imageUrl.isEmpty();
+                        } catch (Exception e) {
+                            // 如果字段不存在（数据库还未迁移），需要查询
+                            return true;
+                        }
+                    });
+            
+            final Map<Long, Product> productMap;
+            if (needQueryProducts) {
+                // 批量查询商品信息以获取图片URL（包括已删除的商品）
+                List<Long> productIds = orderItems.stream()
+                        .map(OrderItem::getProductId)
+                        .distinct()
+                        .collect(Collectors.toList());
+                
+                if (!productIds.isEmpty()) {
+                    List<Product> products = productRepository.findAllById(productIds);
+                    productMap = products.stream()
+                            .collect(Collectors.toMap(Product::getId, product -> product));
+                    
+                    log.debug("查询订单商品图片: 订单ID={}, 需要查询的商品数={}, 实际查询到={}", 
+                            order.getId(), productIds.size(), products.size());
+                } else {
+                    productMap = new java.util.HashMap<>();
+                }
+            } else {
+                productMap = new java.util.HashMap<>();
+            }
+            
+            // 转换为响应DTO
             List<OrderItemResponse> itemResponses = orderItems.stream()
-                    .map(this::convertToOrderItemResponse)
+                    .map(item -> convertToOrderItemResponse(item, productMap.get(item.getProductId())))
                     .collect(Collectors.toList());
             builder.items(itemResponses);
         }
@@ -469,11 +522,42 @@ public class OrderService {
     /**
      * 转换为OrderItemResponse
      */
-    private OrderItemResponse convertToOrderItemResponse(OrderItem orderItem) {
+    private OrderItemResponse convertToOrderItemResponse(OrderItem orderItem, Product product) {
+        String productImageUrl = null;
+        
+        // 优先从订单项快照中获取（如果数据库字段存在且不为空）
+        try {
+            String savedImageUrl = orderItem.getProductImageUrl();
+            if (savedImageUrl != null && !savedImageUrl.trim().isEmpty()) {
+                productImageUrl = savedImageUrl.trim();
+                log.debug("从订单项快照获取图片URL: 订单项ID={}, 商品ID={}, URL={}", 
+                        orderItem.getId(), orderItem.getProductId(), productImageUrl);
+            }
+        } catch (Exception e) {
+            // 如果字段不存在（数据库还未迁移），忽略异常，继续从商品表查询
+            log.debug("订单项中未找到图片URL字段，将从商品表查询: 订单项ID={}", orderItem.getId());
+        }
+        
+        // 如果订单项中没有，尝试从商品表中获取
+        if ((productImageUrl == null || productImageUrl.isEmpty()) && product != null) {
+            String productCoverImageUrl = product.getCoverImageUrl();
+            if (productCoverImageUrl != null && !productCoverImageUrl.trim().isEmpty()) {
+                productImageUrl = productCoverImageUrl.trim();
+                log.debug("从商品表获取图片URL: 订单项ID={}, 商品ID={}, URL={}", 
+                        orderItem.getId(), orderItem.getProductId(), productImageUrl);
+            }
+        }
+        
+        if (productImageUrl == null || productImageUrl.isEmpty()) {
+            log.warn("无法获取商品图片URL: 订单项ID={}, 商品ID={}, 商品名={}", 
+                    orderItem.getId(), orderItem.getProductId(), orderItem.getProductName());
+        }
+        
         return OrderItemResponse.builder()
                 .id(orderItem.getId())
                 .productId(orderItem.getProductId())
                 .productName(orderItem.getProductName())
+                .productImageUrl(productImageUrl)
                 .productPrice(orderItem.getProductPrice())
                 .quantity(orderItem.getQuantity())
                 .subtotalAmount(orderItem.getSubtotalAmount())

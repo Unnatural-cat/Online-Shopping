@@ -1,61 +1,61 @@
 <template>
-  <div class="product-detail" v-loading="loading">
-    <div class="product-detail-container" v-if="product">
-      <el-row :gutter="20">
-          <el-col :span="12">
-            <div class="product-image-container">
-              <el-image
-                :src="product.coverImageUrl || 'https://via.placeholder.com/500x500?text=No+Image'"
-                fit="contain"
-                :preview-src-list="[product.coverImageUrl || '']"
+  <CustomerLayout>
+    <div class="product-detail" v-loading="loading">
+      <el-row :gutter="20" v-if="product" class="product-row">
+        <el-col :span="12">
+          <div class="product-image-container">
+            <el-image
+              :src="product.coverImageUrl || 'https://via.placeholder.com/500x500?text=No+Image'"
+              fit="contain"
+              :preview-src-list="[product.coverImageUrl || '']"
+            />
+          </div>
+        </el-col>
+        <el-col :span="12">
+          <div class="product-info">
+            <h1>{{ product.name }}</h1>
+            <div class="product-price">
+              <span class="price">¥{{ product.price }}</span>
+            </div>
+            <div class="product-meta">
+              <p>库存：<span :class="{ 'stock-low': product.stock < 10 }">{{ product.stock }}</span></p>
+              <p>销量：{{ product.salesCount || 0 }}</p>
+            </div>
+            <div class="product-description">
+              <h3>商品描述</h3>
+              <p>{{ product.description || '暂无描述' }}</p>
+            </div>
+            <div class="product-actions">
+              <el-input-number
+                v-model="quantity"
+                :min="1"
+                :max="product.stock"
+                :disabled="product.stock === 0"
+                style="width: 120px; margin-right: 10px;"
               />
+              <el-button
+                type="primary"
+                size="large"
+                @click="addToCart"
+                :disabled="product.stock === 0"
+              >
+                加入购物车
+              </el-button>
+              <el-button
+                type="success"
+                size="large"
+                @click="buyNow"
+                :disabled="product.stock === 0"
+              >
+                立即购买
+              </el-button>
             </div>
-          </el-col>
-          <el-col :span="12">
-            <div class="product-info">
-              <h1>{{ product.name }}</h1>
-              <div class="product-price">
-                <span class="price">¥{{ product.price }}</span>
-              </div>
-              <div class="product-meta">
-                <p>库存：<span :class="{ 'stock-low': product.stock < 10 }">{{ product.stock }}</span></p>
-                <p>销量：{{ product.salesCount || 0 }}</p>
-              </div>
-              <div class="product-description">
-                <h3>商品描述</h3>
-                <p>{{ product.description || '暂无描述' }}</p>
-              </div>
-              <div class="product-actions">
-                <el-input-number
-                  v-model="quantity"
-                  :min="1"
-                  :max="product.stock"
-                  :disabled="product.stock === 0"
-                  style="width: 120px; margin-right: 10px;"
-                />
-                <el-button
-                  type="primary"
-                  size="large"
-                  @click="addToCart"
-                  :disabled="product.stock === 0"
-                >
-                  加入购物车
-                </el-button>
-                <el-button
-                  type="success"
-                  size="large"
-                  @click="buyNow"
-                  :disabled="product.stock === 0"
-                >
-                  立即购买
-                </el-button>
-              </div>
-            </div>
-          </el-col>
-        </el-row>
+          </div>
+        </el-col>
+      </el-row>
+      <el-empty v-else-if="!loading" description="商品不存在" />
     </div>
-    <el-empty v-else-if="!loading" description="商品不存在" />
-  </div>
+  </CustomerLayout>
 </template>
 
 <script setup>
@@ -64,6 +64,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { getProductDetail } from '@/api/product'
 import { addCartItem } from '@/api/cart'
 import { showSuccess, showError } from '@/utils/message'
+import CustomerLayout from '@/components/CustomerLayout.vue'
 import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
@@ -149,14 +150,18 @@ onMounted(() => {
 
 <style scoped>
 .product-detail {
-  min-height: 100vh;
-  background-color: #f5f5f5;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.product-detail-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 20px;
+.product-row {
+  align-items: stretch;
+}
+
+.product-row :deep(.el-col) {
+  display: flex;
+  flex-direction: column;
 }
 
 .product-image-container {
@@ -164,17 +169,27 @@ onMounted(() => {
   padding: 20px;
   border-radius: 4px;
   text-align: center;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
 }
 
 .product-image-container .el-image {
   width: 100%;
   max-height: 500px;
+  object-fit: contain;
 }
 
 .product-info {
   background: white;
   padding: 30px;
   border-radius: 4px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
 }
 
 .product-info h1 {

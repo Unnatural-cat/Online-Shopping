@@ -107,6 +107,7 @@ CREATE TABLE IF NOT EXISTS `order_item` (
     `product_id` BIGINT NOT NULL COMMENT '商品ID',
     `product_name` VARCHAR(200) NOT NULL COMMENT '商品名称（快照）',
     `product_price` DECIMAL(10, 2) NOT NULL COMMENT '商品价格（快照）',
+    `product_image_url` VARCHAR(500) NULL COMMENT '商品图片URL（快照）',
     `quantity` INT NOT NULL COMMENT '数量',
     `subtotal_amount` DECIMAL(10, 2) NOT NULL COMMENT '小计金额',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -176,15 +177,33 @@ CREATE TABLE IF NOT EXISTS `order_status_log` (
 CREATE TABLE IF NOT EXISTS `notification` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '通知ID',
     `user_id` BIGINT NOT NULL COMMENT '用户ID',
+    `type` VARCHAR(50) NOT NULL COMMENT '通知类型：ORDER_STATUS-订单状态, ORDER_SHIPPED-订单发货',
     `title` VARCHAR(200) NOT NULL COMMENT '通知标题',
     `content` TEXT NULL COMMENT '通知内容',
-    `type` VARCHAR(50) NULL COMMENT '通知类型：ORDER_SHIPPED-订单发货, ORDER_PAID-订单支付, ORDER_CANCELLED-订单取消等',
-    `related_id` BIGINT NULL COMMENT '关联ID（如订单ID）',
+    `order_no` VARCHAR(50) NULL COMMENT '订单号',
+    `order_id` BIGINT NULL COMMENT '订单ID',
     `is_read` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否已读：0-未读, 1-已读',
+    `link` VARCHAR(500) NULL COMMENT '跳转链接',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (`id`),
     KEY `idx_user_id` (`user_id`),
-    KEY `idx_read` (`is_read`),
-    KEY `idx_created_at` (`created_at`)
+    KEY `idx_is_read` (`is_read`),
+    KEY `idx_created_at` (`created_at`),
+    KEY `idx_user_read` (`user_id`, `is_read`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='通知表';
+
+-- ============================================
+-- 10. 商品分类表（category）
+-- ============================================
+CREATE TABLE IF NOT EXISTS `category` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '分类ID',
+    `name` VARCHAR(100) NOT NULL COMMENT '分类名称',
+    `description` VARCHAR(500) NULL COMMENT '分类描述',
+    `sort_order` INT NOT NULL DEFAULT 0 COMMENT '排序顺序',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_name` (`name`),
+    KEY `idx_sort_order` (`sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品分类表';
 

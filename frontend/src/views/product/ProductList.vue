@@ -1,27 +1,26 @@
 <template>
-  <div class="product-list">
-    <div class="product-list-container">
-      <div class="product-header">
+  <CustomerLayout>
+    <div class="product-list page-container">
+      <div class="page-header">
         <h1>商品列表</h1>
-        <div class="search-bar">
+        <div class="button-group">
             <el-input
               v-model="queryParams.keyword"
               placeholder="搜索商品名称或描述"
               clearable
               @clear="handleSearch"
               @keyup.enter="handleSearch"
-              style="width: 300px; margin-right: 10px;"
+            style="width: 300px;"
             >
               <template #prefix>
                 <el-icon><Search /></el-icon>
               </template>
             </el-input>
             <el-button type="primary" @click="handleSearch">搜索</el-button>
-        </div>
+          </div>
       </div>
       
-      <div class="product-content">
-        <div class="filter-bar">
+      <div class="search-section">
           <el-form :inline="true" :model="queryParams">
             <el-form-item label="价格区间">
               <el-input-number
@@ -29,7 +28,7 @@
                 :min="0"
                 :precision="2"
                 placeholder="最低价"
-                style="width: 120px;"
+                style="width: 180px;"
                 @change="handleSearch"
               />
               <span style="margin: 0 10px;">-</span>
@@ -38,7 +37,7 @@
                 :min="0"
                 :precision="2"
                 placeholder="最高价"
-                style="width: 120px;"
+                style="width: 180px;"
                 @change="handleSearch"
               />
             </el-form-item>
@@ -88,6 +87,7 @@
           </el-card>
         </div>
 
+      <div class="pagination-container">
         <Pagination
           v-if="total > 0"
           :total="total"
@@ -97,20 +97,22 @@
         />
       </div>
     </div>
-  </div>
+  </CustomerLayout>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { Search } from '@element-plus/icons-vue'
 import { getProducts } from '@/api/product'
 import { addCartItem } from '@/api/cart'
 import { showSuccess, showError } from '@/utils/message'
 import Pagination from '@/components/Pagination.vue'
+import CustomerLayout from '@/components/CustomerLayout.vue'
 import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 
 const loading = ref(false)
@@ -122,8 +124,7 @@ const queryParams = reactive({
   size: 20,
   keyword: '',
   minPrice: null,
-  maxPrice: null,
-  categoryId: null
+  maxPrice: null
 })
 
 async function loadProducts() {
@@ -136,7 +137,6 @@ async function loadProducts() {
     if (queryParams.keyword) params.keyword = queryParams.keyword
     if (queryParams.minPrice) params.minPrice = queryParams.minPrice
     if (queryParams.maxPrice) params.maxPrice = queryParams.maxPrice
-    if (queryParams.categoryId) params.categoryId = queryParams.categoryId
 
     const response = await getProducts(params)
     if (response.code === 0) {
@@ -163,8 +163,9 @@ function resetFilters() {
   queryParams.keyword = ''
   queryParams.minPrice = null
   queryParams.maxPrice = null
-  queryParams.categoryId = null
   queryParams.page = 1
+  // 清除URL参数
+  router.push({ path: '/products', query: {} })
   loadProducts()
 }
 
@@ -210,44 +211,7 @@ onMounted(() => {
 
 <style scoped>
 .product-list {
-  min-height: 100vh;
-  background-color: #f5f5f5;
-}
-
-.product-list-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.product-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: white;
-  padding: 20px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-}
-
-.product-header h1 {
-  margin: 0;
-  font-size: 24px;
-}
-
-.search-bar {
-  display: flex;
-  align-items: center;
-}
-
-.product-content {
-  background: white;
-  padding: 20px;
-  border-radius: 4px;
-}
-
-.filter-bar {
-  margin-bottom: 20px;
+  /* 使用全局样式，无需重复定义 */
 }
 
 .product-grid {
@@ -309,5 +273,13 @@ onMounted(() => {
 
 .product-card .el-button {
   width: 100%;
+}
+
+.search-section {
+  margin: 8px 0;
+}
+
+.search-section :deep(.el-form-item) {
+  margin-bottom: 0;
 }
 </style>

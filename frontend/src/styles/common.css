@@ -1,0 +1,289 @@
+/* 全局对齐和间距规范 */
+
+/* ========== 间距系统 ========== */
+:root {
+  /* 基础间距单位 */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+  
+  /* 页面容器 */
+  --page-padding: 20px;
+  --page-max-width: 1200px;
+  --page-container-padding: 20px;
+  
+  /* 卡片间距 */
+  --card-padding: 20px;
+  --card-margin-bottom: 20px;
+  --card-border-radius: 4px;
+  
+  /* 表单间距 */
+  --form-item-margin-bottom: 20px;
+  --form-label-width: 100px;
+  --form-input-width: 300px;
+  
+  /* 按钮间距 */
+  --button-gap: 10px;
+  --button-group-gap: 12px;
+  
+  /* 表格间距 */
+  --table-cell-padding: 12px 16px;
+  --table-header-padding: 16px;
+  
+  /* 对齐方式 */
+  --text-align-left: left;
+  --text-align-center: center;
+  --text-align-right: right;
+}
+
+/* ========== 页面容器对齐 ========== */
+.page-container {
+  padding: var(--page-padding);
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  background: white;
+  padding: var(--card-padding);
+  border-radius: var(--card-border-radius);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.page-header h1,
+.page-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #303133;
+}
+
+/* ========== 表单对齐 ========== */
+.form-container {
+  background: white;
+  padding: var(--card-padding);
+  border-radius: var(--card-border-radius);
+  margin-bottom: var(--card-margin-bottom);
+}
+
+.form-container :deep(.el-form) {
+  margin: 0;
+}
+
+.form-container :deep(.el-form-item) {
+  margin-bottom: var(--form-item-margin-bottom);
+  display: flex;
+  align-items: center;
+}
+
+.form-container :deep(.el-form-item__label) {
+  width: var(--form-label-width);
+  text-align: right;
+  padding-right: var(--spacing-md);
+  font-weight: 500;
+  color: #606266;
+  flex-shrink: 0;
+}
+
+.form-container :deep(.el-form-item__content) {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.form-container :deep(.el-form--inline .el-form-item) {
+  margin-right: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+}
+
+.form-container :deep(.el-form--inline .el-form-item__label) {
+  width: auto;
+  padding-right: var(--spacing-sm);
+}
+
+/* ========== 按钮组对齐 ========== */
+.button-group {
+  display: flex;
+  align-items: center;
+  gap: var(--button-gap);
+  flex-wrap: wrap;
+}
+
+.button-group-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--button-gap);
+  flex-wrap: wrap;
+}
+
+.button-group-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--button-gap);
+  flex-wrap: wrap;
+}
+
+.action-section {
+  display: flex;
+  align-items: center;
+  gap: var(--button-group-gap);
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+/* ========== 搜索/筛选区域对齐 ========== */
+.search-section {
+  background: #f5f7fa;
+  padding: var(--card-padding);
+  border-radius: var(--card-border-radius);
+  margin-bottom: var(--spacing-lg);
+}
+
+.search-section :deep(.el-form) {
+  margin: 0;
+}
+
+.search-section :deep(.el-form-item) {
+  margin-bottom: 0;
+  margin-right: var(--spacing-lg);
+}
+
+.search-section :deep(.el-form-item__label) {
+  font-weight: 500;
+  color: #606266;
+  padding-right: var(--spacing-sm);
+  width: auto;
+}
+
+.search-section :deep(.el-form-item__content) {
+  display: flex;
+  align-items: center;
+}
+
+/* ========== 表格对齐 ========== */
+.table-container {
+  background: white;
+  padding: var(--card-padding);
+  border-radius: var(--card-border-radius);
+  margin-bottom: var(--card-margin-bottom);
+}
+
+.table-container :deep(.el-table) {
+  width: 100%;
+}
+
+.table-container :deep(.el-table th),
+.table-container :deep(.el-table td) {
+  padding: var(--table-cell-padding);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.table-container :deep(.el-table th) {
+  background-color: #fafafa;
+  font-weight: 600;
+  color: #606266;
+  vertical-align: middle;
+}
+
+.table-container :deep(.el-table th.is-center),
+.table-container :deep(.el-table td.is-center) {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table-container :deep(.el-table th.is-right),
+.table-container :deep(.el-table td.is-right) {
+  text-align: right;
+  vertical-align: middle;
+}
+
+/* 确保所有表格单元格内容垂直居中 */
+.table-container :deep(.el-table__cell) {
+  vertical-align: middle !important;
+}
+
+.table-container :deep(.el-table__body-wrapper .el-table__body tr td) {
+  vertical-align: middle !important;
+}
+
+.table-container :deep(.el-table__header-wrapper .el-table__header tr th) {
+  vertical-align: middle !important;
+}
+
+/* ========== 卡片对齐 ========== */
+.card-container {
+  background: white;
+  padding: var(--card-padding);
+  border-radius: var(--card-border-radius);
+  margin-bottom: var(--card-margin-bottom);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* ========== 分页对齐 ========== */
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-md) 0;
+}
+
+/* ========== 选择状态显示对齐 ========== */
+.selection-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--card-padding);
+  background-color: #ecf5ff;
+  border: 1px solid #b3d8ff;
+  border-radius: var(--card-border-radius);
+  margin-bottom: var(--spacing-lg);
+  color: #409eff;
+  font-size: 14px;
+}
+
+/* ========== 响应式对齐 ========== */
+@media (max-width: 768px) {
+  :root {
+    --page-padding: 16px;
+    --card-padding: 16px;
+    --form-label-width: 80px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+  }
+  
+  .button-group,
+  .action-section {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .form-container :deep(.el-form-item) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .form-container :deep(.el-form-item__label) {
+    width: 100%;
+    text-align: left;
+    padding-right: 0;
+    margin-bottom: var(--spacing-sm);
+  }
+}
+

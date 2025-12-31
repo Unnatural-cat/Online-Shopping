@@ -15,8 +15,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotificationListResponse {
-    private List<NotificationResponse> items;
-    private Long total;
-    private Long unreadCount;
+    private List<NotificationResponse> content;
+    private Long totalElements;
+    private Integer totalPages;
+    private Integer currentPage;
+    private Integer pageSize;
+    private Boolean hasNext;
+    private Boolean hasPrevious;
+    private Integer unreadCount; // 未读通知数量
 }
 

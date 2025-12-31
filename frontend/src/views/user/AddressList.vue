@@ -1,11 +1,10 @@
 <template>
-  <div class="address-list" v-loading="loading">
-    <div class="address-list-container">
-      <div class="address-header">
+  <CustomerLayout>
+    <div class="address-list" v-loading="loading">
+      <div class="page-header">
         <h1>收货地址管理</h1>
         <el-button type="primary" @click="handleAdd">新增地址</el-button>
       </div>
-      <div class="address-content">
         <el-empty v-if="addresses.length === 0 && !loading" description="暂无收货地址">
           <el-button type="primary" @click="handleAdd">新增地址</el-button>
         </el-empty>
@@ -45,8 +44,6 @@
             </div>
           </el-card>
         </div>
-      </el-main>
-    </el-container>
 
     <!-- 新增/编辑地址对话框 -->
     <el-dialog
@@ -97,7 +94,8 @@
         </el-button>
       </template>
     </el-dialog>
-  </div>
+    </div>
+  </CustomerLayout>
 </template>
 
 <script setup>
@@ -110,6 +108,7 @@ import {
   setDefaultAddress
 } from '@/api/user'
 import { showSuccess, showError, confirm } from '@/utils/message'
+import CustomerLayout from '@/components/CustomerLayout.vue'
 
 const loading = ref(false)
 const submitting = ref(false)
@@ -260,35 +259,24 @@ onMounted(() => {
 
 <style scoped>
 .address-list {
-  min-height: 100vh;
-  background-color: #f5f5f5;
-}
-
-.address-list-container {
-  max-width: 1400px;
-  margin: 0 auto;
   padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.address-header {
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 20px;
   background: white;
   padding: 20px;
   border-radius: 4px;
-  margin-bottom: 20px;
 }
 
-.address-header h1 {
+.page-header h1 {
   margin: 0;
   font-size: 24px;
-}
-
-.address-content {
-  background: white;
-  padding: 20px;
-  border-radius: 4px;
 }
 
 .address-grid {

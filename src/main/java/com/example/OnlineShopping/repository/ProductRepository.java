@@ -23,11 +23,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByStatusOrderByCreatedAtDesc(ProductStatus status, Pageable pageable);
 
     /**
-     * 根据分类ID和状态分页查询商品
-     */
-    Page<Product> findByCategoryIdAndStatus(Long categoryId, ProductStatus status, Pageable pageable);
-
-    /**
      * 根据关键词搜索商品（名称或描述中包含关键词，且状态为上架）
      */
     @Query("SELECT p FROM Product p WHERE p.status = :status AND " +
@@ -48,17 +43,15 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                                       Pageable pageable);
 
     /**
-     * 组合查询：分类、价格区间、关键词、状态
+     * 组合查询：价格区间、关键词、状态
      */
     @Query("SELECT p FROM Product p WHERE " +
-           "(:categoryId IS NULL OR p.categoryId = :categoryId) AND " +
            "p.status = :status AND " +
            "(:minPrice IS NULL OR p.price >= :minPrice) AND " +
            "(:maxPrice IS NULL OR p.price <= :maxPrice) AND " +
            "(:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
-    Page<Product> findWithFilters(@Param("categoryId") Long categoryId,
-                                   @Param("status") ProductStatus status,
+    Page<Product> findWithFilters(@Param("status") ProductStatus status,
                                    @Param("minPrice") BigDecimal minPrice,
                                    @Param("maxPrice") BigDecimal maxPrice,
                                    @Param("keyword") String keyword,
