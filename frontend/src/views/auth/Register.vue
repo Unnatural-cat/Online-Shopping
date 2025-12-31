@@ -14,9 +14,9 @@
             >
               <template #prefix>
                 <el-icon class="input-icon"><Message /></el-icon>
-              </template>
+      </template>
             </el-input>
-          </el-form-item>
+        </el-form-item>
           <el-form-item prop="phone">
             <el-input 
               v-model="registerForm.phone" 
@@ -28,7 +28,7 @@
                 <el-icon class="input-icon"><Phone /></el-icon>
               </template>
             </el-input>
-          </el-form-item>
+        </el-form-item>
           <el-form-item prop="nickname">
             <el-input 
               v-model="registerForm.nickname" 
@@ -40,7 +40,7 @@
                 <el-icon class="input-icon"><User /></el-icon>
               </template>
             </el-input>
-          </el-form-item>
+        </el-form-item>
           <el-form-item prop="password">
             <el-input 
               v-model="registerForm.password" 
@@ -55,8 +55,8 @@
                 <el-icon class="input-icon"><Lock /></el-icon>
               </template>
             </el-input>
-          </el-form-item>
-          <el-form-item>
+        </el-form-item>
+        <el-form-item>
             <el-button 
               type="primary" 
               @click="handleRegister" 
@@ -66,15 +66,15 @@
             >
               注册
             </el-button>
-          </el-form-item>
-          <el-form-item>
+        </el-form-item>
+        <el-form-item>
             <div class="register-footer">
               <el-link type="primary" @click="$router.push('/login')" class="login-link">
                 已有账号？立即登录
               </el-link>
-            </div>
-          </el-form-item>
-        </el-form>
+          </div>
+        </el-form-item>
+      </el-form>
       </div>
       <div class="copyright">
         Copyright © 2024 在线购物 Pro All Rights Reserved.

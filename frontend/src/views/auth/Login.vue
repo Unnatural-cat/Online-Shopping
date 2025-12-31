@@ -29,15 +29,15 @@
             >
               <template #prefix>
                 <el-icon class="input-icon"><Lock /></el-icon>
-              </template>
+      </template>
             </el-input>
-          </el-form-item>
+        </el-form-item>
           <el-form-item>
             <div class="login-options">
               <el-checkbox v-model="rememberMe">记住我</el-checkbox>
             </div>
-          </el-form-item>
-          <el-form-item>
+        </el-form-item>
+        <el-form-item>
             <el-button 
               type="primary" 
               @click="handleLogin" 
@@ -47,15 +47,15 @@
             >
               登录
             </el-button>
-          </el-form-item>
-          <el-form-item>
+        </el-form-item>
+        <el-form-item>
             <div class="login-footer">
               <el-link type="primary" @click="$router.push('/register')" class="register-link">
                 还没有账号？立即注册
               </el-link>
-            </div>
-          </el-form-item>
-        </el-form>
+          </div>
+        </el-form-item>
+      </el-form>
       </div>
       <div class="copyright">
         Copyright © 2024 在线购物 Pro All Rights Reserved.

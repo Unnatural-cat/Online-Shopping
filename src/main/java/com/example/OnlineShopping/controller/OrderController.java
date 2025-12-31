@@ -54,5 +54,14 @@ public class OrderController {
         OrderResponse response = orderService.cancelOrder(orderNo);
         return ResponseResult.success("订单取消成功", response);
     }
+
+    /**
+     * 完成订单
+     */
+    @PostMapping("/{orderNo}/complete")
+    public ResponseResult<OrderResponse> completeOrder(@PathVariable String orderNo) {
+        OrderResponse response = orderService.completeOrder(orderNo);
+        return ResponseResult.success("订单已完成", response);
+    }
 }
 

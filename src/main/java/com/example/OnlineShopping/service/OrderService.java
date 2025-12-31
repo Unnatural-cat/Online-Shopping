@@ -257,6 +257,45 @@ public class OrderService {
     }
 
     /**
+     * 顾客端：完成订单
+     */
+    @Transactional
+    public OrderResponse completeOrder(String orderNo) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        Order order = orderRepository.findByOrderNo(orderNo)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "订单不存在"));
+
+        if (!order.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "无权操作该订单");
+        }
+
+        // 只能完成已发货的订单
+        if (order.getStatus() != OrderStatus.SHIPPED) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "只能完成已发货的订单");
+        }
+
+        // 更新订单状态
+        order.setStatus(OrderStatus.COMPLETED);
+        order.setCompletedAt(LocalDateTime.now());
+        order = orderRepository.save(order);
+
+        // 记录状态日志
+        recordStatusLog(order.getId(), OrderStatus.SHIPPED.name(), OrderStatus.COMPLETED.name(), 
+                "用户确认收货，订单已完成", "user");
+        
+        // 创建订单完成通知
+        try {
+            notificationService.createOrderStatusNotification(
+                    order.getUserId(), order.getOrderNo(), order.getId(), 
+                    OrderStatus.SHIPPED.name(), OrderStatus.COMPLETED.name(), "订单已完成");
+        } catch (Exception e) {
+            log.error("创建订单通知失败：订单号={}", order.getOrderNo(), e);
+        }
+
+        return convertToOrderResponse(order, true, true);
+    }
+
+    /**
      * 管理端：查询订单列表
      */
     public OrderListResponse getAdminOrders(OrderQueryRequest request) {

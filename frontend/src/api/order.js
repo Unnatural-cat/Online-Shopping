@@ -30,3 +30,10 @@ export function cancelOrder(orderNo) {
   })
 }
 
+export function completeOrder(orderNo) {
+  return request({
+    url: `/orders/${orderNo}/complete`,
+    method: 'post'
+  })
+}
+

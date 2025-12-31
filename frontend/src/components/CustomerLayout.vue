@@ -80,7 +80,7 @@
           </el-menu-item>
           
           <el-menu-item index="/orders" v-if="userStore.isLoggedIn">
-            <el-icon><Document /></el-icon>
+              <el-icon><Document /></el-icon>
             <template #title>我的订单</template>
           </el-menu-item>
           

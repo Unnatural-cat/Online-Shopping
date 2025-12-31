@@ -76,6 +76,13 @@
                     去支付
                   </el-button>
                   <el-button
+                    v-if="order.status === 'SHIPPED'"
+                    type="success"
+                    @click="handleComplete(order.orderNo)"
+                  >
+                    完成订单
+                  </el-button>
+                  <el-button
                     type="primary"
                     @click="$router.push(`/orders/${order.orderNo}`)"
                   >
@@ -102,7 +109,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { getOrders, cancelOrder } from '@/api/order'
+import { getOrders, cancelOrder, completeOrder } from '@/api/order'
 import { showSuccess, showError, confirm } from '@/utils/message'
 import Pagination from '@/components/Pagination.vue'
 import CustomerLayout from '@/components/CustomerLayout.vue'
@@ -191,6 +198,19 @@ async function handleCancel(orderNo) {
   } catch (error) {
     if (error !== 'cancel') {
       console.error('取消订单失败:', error)
+    }
+  }
+}
+
+async function handleComplete(orderNo) {
+  try {
+    await confirm('确认已收到商品，完成订单吗？')
+    await completeOrder(orderNo)
+    showSuccess('订单已完成')
+    loadOrders()
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('完成订单失败:', error)
     }
   }
 }

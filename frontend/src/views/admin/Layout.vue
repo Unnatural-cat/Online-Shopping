@@ -60,13 +60,13 @@
       >
         <!-- 商品管理 - 单独菜单项 -->
         <el-menu-item index="/admin/products">
-          <el-icon><Goods /></el-icon>
+            <el-icon><Goods /></el-icon>
           <template #title>商品管理</template>
         </el-menu-item>
         
         <!-- 订单列表 - 单独菜单项 -->
         <el-menu-item index="/admin/orders">
-          <el-icon><Document /></el-icon>
+            <el-icon><Document /></el-icon>
           <template #title>订单列表</template>
         </el-menu-item>
         
@@ -80,6 +80,12 @@
         <el-menu-item index="/admin/reports">
           <el-icon><DataAnalysis /></el-icon>
           <template #title>统计报表</template>
+        </el-menu-item>
+        
+        <!-- 用户管理 - 单独菜单项 -->
+        <el-menu-item index="/admin/users">
+          <el-icon><User /></el-icon>
+          <template #title>用户管理</template>
         </el-menu-item>
         
         <!-- 个人中心 - 单独菜单项 -->
@@ -138,6 +144,7 @@ const activeMenu = computed(() => {
   if (path.startsWith('/admin/orders/statistics')) return '/admin/orders/statistics'
   if (path.startsWith('/admin/orders')) return '/admin/orders'
   if (path.startsWith('/admin/reports')) return '/admin/reports'
+  if (path.startsWith('/admin/users')) return '/admin/users'
   if (path.startsWith('/admin/profile')) return '/admin/profile'
   return path
 })
