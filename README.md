@@ -40,7 +40,7 @@
 
  后端技术
 
-- **框架：Spring Boot 4.0.1
+- 框架：Spring Boot 4.0.1
 - Java 版本：Java 21
 - 安全框架：Spring Security + JWT
 - 数据访问：Spring Data JPA / Hibernate
